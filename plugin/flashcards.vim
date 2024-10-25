@@ -1,13 +1,14 @@
-let s:flashcards_echom_prefix = '[flashcards.vim] '
 let g:flashcards_directory = "/opt/pabsan-0/flashcards/cards/"
 let g:flashcards_template = "/opt/pabsan-0/flashcards/assets/template.fc"
+let s:flashcards_echom_prefix = '[flashcards.vim] '
 
 " Check that fzf.vim is installed
 if match(&runtimepath, 'fzf.vim') == -1
     echom s:flashcards_echom_prefix . "fzf.vim not found! Loading anyway, do expect issues." 
 endif
 
-" Main calls to FZF and Rg. Within functions to enable tab-switching
+" Main calls to FZF and Rg
+" Within functions to enable tab-switching without code duplication
 function! s:flashcard_call_rg(query)
     call fzf#vim#grep(
         \ "rg --column --color=always --smart-case " . shellescape(a:query), 
@@ -26,8 +27,37 @@ function! s:flashcard_call_fzf(query)
 endfunction
 
 
-" These functions are used to alternate the history used when 
-" switching from one mode to the other.
+" User interfaces to the functions above
+command! -bang -nargs=* FlashcardsFzf
+    \ call s:flashcard_call_fzf(<q-args>)
+
+command! -bang -nargs=* FlashcardsRg
+    \ call s:flashcard_call_rg(<q-args>)
+
+
+" This function switches FZF<->RG while keeping the current buffered text
+" - Depends on g:fzf_history_dir to be configured
+" - Not perfect: won't usually crash everything but shows weird behavior
+function! s:flashcard_mode_switch(current_mode)
+
+    if a:current_mode == 'fzf'
+        let l:history = readfile(expand(g:fzf_history_dir) . "/files", '', -1)
+        let l:last = l:history[0]
+        call s:flashcard_call_rg(l:last)
+    elseif a:current_mode == 'rg'
+        let l:history = readfile(expand(g:fzf_history_dir) . "/rg", '', -1)
+        let l:last = l:history[0]
+        call s:flashcard_call_fzf(l:last)
+    else
+        echom s:flashcards_echom_prefix . 'Wrong current mode argument.'
+    endif
+
+endfunction
+
+
+" Three fzf.vim callbacks: 2 specific + 1 common one
+" This is to know current mode towards switching FZF<->RG
+" After this check is made, the whole logic off the fzf menu begins
 function! s:flashcard_cb_rg(lines)
     call s:flashcard_cb(a:lines, "rg")
 endfunction
@@ -36,8 +66,7 @@ function! s:flashcard_cb_fzf(lines)
     call s:flashcard_cb(a:lines, "fzf")
 endfunction
 
-
-function! s:flashcard_cb(lines, mode)
+function! s:flashcard_cb(lines, current_mode)
 
     if len(a:lines) < 2
         let l:key = a:lines[0]
@@ -48,16 +77,7 @@ function! s:flashcard_cb(lines, mode)
     endif
 
 	if key == 'tab' "TODO edge case where there is no match
-
-        if a:mode == 'fzf'
-            let l:history = readfile(expand(g:fzf_history_dir) . "/files", '', -1)
-            let l:last = l:history[0]
-            call s:flashcard_call_rg(l:last)
-        elseif a:mode == 'rg'
-            let l:history = readfile(expand(g:fzf_history_dir) . "/rg", '', -1)
-            let l:last = l:history[0]
-            call s:flashcard_call_fzf(l:last)
-
+        call s:flashcard_mode_switch(a:current_mode)
         return
     endif
 
@@ -79,21 +99,12 @@ function! s:flashcard_cb(lines, mode)
         execute 'tabedit' g:flashcards_directory .. file
 		execute 'tabp'
     else
-            echom "Wrong a:mode argument"
-        endif
-    else
        " default behavior: do nothing 
     endif
 endfunction
 
-command! -bang -nargs=* FlashcardsFzf
-    \ call s:flashcard_call_fzf(<q-args>)
 
-command! -bang -nargs=* FlashcardsRg
-    \ call s:flashcard_call_rg(<q-args>)
-
-
-" Key mapping to invoke the Action command, only if not being used
+" Key mapping to invoke an entrypoint, only if not being used already
 if mapcheck("<leader>c", "I") == "" 
     nnoremap <leader>c :FlashcardsRg <CR>
 endif
