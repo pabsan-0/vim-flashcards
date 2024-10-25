@@ -1,4 +1,4 @@
-# actions.vim
+# flashcards.vim
 
 Vim integration of flashcards - quick sticky notes with useful tips.
 
@@ -21,16 +21,16 @@ $ sudo apt install bat
 
 ## Setup 
 
-You'll need a flashcard collection to draw from. These could be simple text files, but I have opted for using a custom `.fc` format. Find my collection at [pabsan-0/flashcards](github.com/pabsan-0/flashcards).
+You'll need a flashcard collection to draw from. These could be simple text files, but I have opted for using a custom `.fc` format. Find my collection at [pabsan-0/flashcards](https://github.com/pabsan-0/flashcards).
 
 ## Usage 
 
 If unused, the plugin will set `<leader>c` as default mapping to call the flashcards view.
 
-The point of this plugin is speed, nonetheless you can also call it via the slower `:Flashcards`. 
+The point of this plugin is speed, nonetheless you can also call it via the slower `:FlashcardsRg` and `:FlashcardsFzf`. 
 
 
 ## FTplugin
 
-While inside a `.fc` flashcard file, use :FlashcardTemplate to read a template file into the current buffer. 
+TODO
 
