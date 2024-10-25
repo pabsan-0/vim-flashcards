@@ -7,9 +7,23 @@ if match(&runtimepath, 'fzf.vim') == -1
     echom s:flashcards_echom_prefix . "fzf.vim not found! Loading anyway, do expect issues." 
 endif
 
-" TODO decide functionalities
-" TODO initial query to be able to switch modes
+" Main calls to FZF and Rg. Within functions to enable tab-switching
+function! s:flashcard_call_rg(query)
+    call fzf#vim#grep(
+        \ "rg --column --color=always --smart-case " . shellescape(a:query), 
+        \ 1, 
+        \ fzf#vim#with_preview({'dir': g:flashcards_directory, 
+        \   'options': ['--expect=alt-enter,tab,ctrl-t','--query', a:query], 
+        \   'sink*': function('s:flashcard_cb_rg')
+        \ }), 0)
+endfunction
 
+function! s:flashcard_call_fzf(query)
+    call fzf#vim#files(g:flashcards_directory, fzf#vim#with_preview({
+        \   'options': ['--expect=alt-enter,tab,ctrl-t','--query', a:query], 
+        \   'sink*': function('s:flashcard_cb_fzf')
+        \ }), 0)
+endfunction
 
 
 " These functions are used to alternate the history used when 
@@ -38,21 +52,11 @@ function! s:flashcard_cb(lines, mode)
         if a:mode == 'fzf'
             let l:history = readfile(expand(g:fzf_history_dir) . "/files", '', -1)
             let l:last = l:history[0]
-            call fzf#vim#grep(
-                \ "rg --column --color=always --smart-case ' '", 
-                \ 1, 
-                \ fzf#vim#with_preview({'dir': g:flashcards_directory, 
-                \   'options': ['--expect=alt-enter,tab,ctrl-t','--query', l:last], 
-                \   'sink*': function('s:flashcard_cb_rg')
-                \ }), 0)
-
+            call s:flashcard_call_rg(l:last)
         elseif a:mode == 'rg'
             let l:history = readfile(expand(g:fzf_history_dir) . "/rg", '', -1)
             let l:last = l:history[0]
-            call fzf#vim#files(g:flashcards_directory, fzf#vim#with_preview({
-                \   'options': ['--expect=alt-enter,tab,ctrl-t','--query', l:last], 
-                \   'sink*': function('s:flashcard_cb_fzf')
-                \ }), 0)
+            call s:flashcard_call_fzf(l:last)
 
         return
     endif
@@ -83,20 +87,10 @@ function! s:flashcard_cb(lines, mode)
 endfunction
 
 command! -bang -nargs=* FlashcardsFzf
-    \ call fzf#vim#files(g:flashcards_directory, fzf#vim#with_preview({
-    \   'options': ['--expect=ctrl-r,alt-enter,tab,ctrl-t'], 
-    \   'sink*': function('s:flashcard_cb_fzf')
-    \ }), <bang>0)
+    \ call s:flashcard_call_fzf(<q-args>)
 
 command! -bang -nargs=* FlashcardsRg
-    \ call fzf#vim#grep(
-    \ "rg --column --color=always --smart-case ".shellescape(<q-args>), 
-    \ 1, 
-    \ fzf#vim#with_preview({'dir': g:flashcards_directory, 
-    \   'options': ['--expect=ctrl-r,alt-enter,tab,ctrl-t'], 
-    \   'sink*': function('s:flashcard_cb_rg')
-    \ }),
-    \ <bang>0)
+    \ call s:flashcard_call_rg(<q-args>)
 
 
 " Key mapping to invoke the Action command, only if not being used
