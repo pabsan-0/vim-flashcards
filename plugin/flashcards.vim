@@ -2,6 +2,9 @@ let g:flashcards_directory = "/opt/pabsan-0/flashcards/cards/"
 let g:flashcards_template = "/opt/pabsan-0/flashcards/assets/template.fc"
 let s:flashcards_echom_prefix = '[flashcards.vim] '
 
+let s:flashcards_fzf_keys = 'tab,ctrl-n,ctrl-t,ctrl-l,ctrl-w'
+let s:flashcards_fzf_hint = 'switch mode <tab>, new card <C-n>, open on tab <C-t>/<C-l>, open on window <C-w>'
+
 " Check that fzf.vim is installed
 if match(&runtimepath, 'fzf.vim') == -1
     echom s:flashcards_echom_prefix . "fzf.vim not found! Loading anyway, do expect issues." 
@@ -11,17 +14,25 @@ endif
 " Within functions to enable tab-switching without code duplication
 function! s:flashcard_call_rg(query)
     call fzf#vim#grep(
-        \ "rg --column --color=always --smart-case " . shellescape(a:query), 
+        \ "rg --column --color=always --smart-case " .. shellescape(a:query), 
         \ 1, 
         \ fzf#vim#with_preview({'dir': g:flashcards_directory, 
-        \   'options': ['--expect=alt-enter,tab,ctrl-t','--query', a:query], 
-        \   'sink*': function('s:flashcard_cb_rg')
+        \   'options': [
+        \      '--expect=' .. s:flashcards_fzf_keys,
+        \      '--header=' .. s:flashcards_fzf_hint,
+        \      '--query', a:query
+        \   ], 
+        \  'sink*': function('s:flashcard_cb_rg')
         \ }), 0)
 endfunction
 
 function! s:flashcard_call_fzf(query)
     call fzf#vim#files(g:flashcards_directory, fzf#vim#with_preview({
-        \   'options': ['--expect=alt-enter,tab,ctrl-t','--query', a:query], 
+        \   'options': [
+        \      '--expect=' .. s:flashcards_fzf_keys,
+        \      '--header=' .. s:flashcards_fzf_hint,
+        \      '--query', a:query
+        \   ], 
         \   'sink*': function('s:flashcard_cb_fzf')
         \ }), 0)
 endfunction
@@ -41,15 +52,15 @@ command! -bang -nargs=* FlashcardsRg
 function! s:flashcard_mode_switch(current_mode)
 
     if a:current_mode == 'fzf'
-        let l:history = readfile(expand(g:fzf_history_dir) . "/files", '', -1)
+        let l:history = readfile(expand(g:fzf_history_dir) .. "/files", '', -1)
         let l:last = l:history[0]
         call s:flashcard_call_rg(l:last)
     elseif a:current_mode == 'rg'
-        let l:history = readfile(expand(g:fzf_history_dir) . "/rg", '', -1)
+        let l:history = readfile(expand(g:fzf_history_dir) .. "/rg", '', -1)
         let l:last = l:history[0]
         call s:flashcard_call_fzf(l:last)
     else
-        echom s:flashcards_echom_prefix . 'Wrong current mode argument.'
+        echom s:flashcards_echom_prefix .. 'Wrong current mode argument.'
     endif
 
 endfunction
@@ -67,7 +78,9 @@ function! s:flashcard_cb_fzf(lines)
 endfunction
 
 function! s:flashcard_cb(lines, current_mode)
-
+    
+    " If there is a match, lines will have [key, match]
+    " Else, it is just [key]
     if len(a:lines) < 2
         let l:key = a:lines[0]
         let l:file = 0
@@ -76,31 +89,50 @@ function! s:flashcard_cb(lines, current_mode)
         let l:file = split(l:fileline_str, ':', 2)[0]
     endif
 
-	if key == 'tab' "TODO edge case where there is no match
+    " Actions that require no match
+	if l:key == 'tab'         " Perform mode switching based on the key
         call s:flashcard_mode_switch(a:current_mode)
         return
-    endif
-
-    if l:file == 0
+    elseif l:key == 'ctrl-n'    " Create a New flashcard
+        execute 'tabnew'
+        execute 'lcd ' ..  g:flashcards_directory
+        execute 'read ' .. g:flashcards_template 
         return
     endif
 
-    if key == 'alt-enter' "TODO
-        execute 'tabedit' g:flashcards_directory .. file
-
-    elseif key == 'ctrl-n' "TODO
-        execute 'tabedit' g:flashcards_directory .. file
-
-    elseif key == 'ctrl-t' "TODO
-        execute 'tabedit' g:flashcards_directory .. file
-		execute 'tabp'
-
-    elseif key == 'ctrl-w' "TODO
-        execute 'tabedit' g:flashcards_directory .. file
-		execute 'tabp'
-    else
-       " default behavior: do nothing 
+    " Actions that require match. Ensure sane input before that
+    if l:file == 0
+        echom s:flashcards_echom_prefix .. 'Empty line selected. No FZF match.'
+        return
     endif
+
+    if l:key == 'ctrl-t'        " Open flashcard in a new Tab 
+        execute 'tabedit' g:flashcards_directory .. file
+        return
+
+    elseif l:key == 'ctrl-l'    " Open flashcard in a new tab for Later
+        execute 'tabedit' g:flashcards_directory .. file
+		execute 'tabp'
+        return
+
+    elseif l:key == 'ctrl-w'    " Open flashcard in new Window
+        echo "Specify window split direction: s/v"
+        let l:window_split_char = getchar()
+
+        if l:window_split_char ==# 's'
+            execute 'split ' .. file
+        elseif if l:window_split_char ==# 'v'
+            execute 'vsplit ' .. file
+        else
+            execute 'vsplit ' .. file
+        endif
+        return 
+
+    else
+       " Default behavior: do nothing 
+       " This is mainly a visualization app
+    endif
+
 endfunction
 
 
