@@ -3,7 +3,7 @@ let g:flashcards_template = "/opt/pabsan-0/flashcards/assets/template.fc"
 let s:flashcards_echom_prefix = '[flashcards.vim] '
 let g:flashcards_file_extension = '.fc'
 
-let s:flashcards_fzf_keys = 'tab,ctrl-n,ctrl-t,ctrl-l,ctrl-w'
+let s:flashcards_fzf_keys = 'tab,ctrl-a,ctrl-t,ctrl-l,ctrl-w'
 let s:flashcards_fzf_hint = 'switch mode <tab>, new card <C-n>, open on tab <C-t>/<C-l>, open on window <C-w>'
 
 " Check that fzf.vim is installed
@@ -105,7 +105,7 @@ function! s:flashcard_cb(lines, current_mode)
 	if l:key == 'tab'         " Perform mode switching based on the key
         call s:flashcard_mode_switch(a:current_mode)
         return
-    elseif l:key == 'ctrl-n'    " Create a New flashcard
+    elseif l:key == 'ctrl-a'    " Edit and Add a new flashcard
         let l:newcard = input('Insert new filename (no extension): ')
         let l:newcard = l:newcard .. g:flashcards_file_extension
         execute 'tabnew ' .. fnameescape(g:flashcards_directory .. l:newcard)
