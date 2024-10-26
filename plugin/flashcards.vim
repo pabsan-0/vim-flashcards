@@ -48,18 +48,29 @@ command! -bang -nargs=* FlashcardsRg
 
 
 " This function switches FZF<->RG while keeping the current buffered text
-" - Depends on g:fzf_history_dir to be configured
+" - Can only keep text if g:fzf_history_dir is configured, else discards it
 " - Not perfect: won't usually crash everything but shows weird behavior
 function! s:flashcard_mode_switch(current_mode)
 
     if a:current_mode == 'fzf'
-        let l:history = readfile(expand(g:fzf_history_dir) .. "/files", '', -1)
-        let l:last = l:history[0]
-        call s:flashcard_call_rg(l:last)
+
+        if get(g:, 'fzf_history_dir', 0) == 0
+            call s:flashcard_call_rg('')
+        else
+            let l:history = readfile(expand(g:fzf_history_dir) .. "/files", '', -1)
+            let l:last = l:history[0]
+            call s:flashcard_call_rg(l:last)
+        endif
+
     elseif a:current_mode == 'rg'
-        let l:history = readfile(expand(g:fzf_history_dir) .. "/rg", '', -1)
-        let l:last = l:history[0]
-        call s:flashcard_call_fzf(l:last)
+        
+        if get(g:, 'fzf_history_dir', 0) == 0
+            call s:flashcard_call_fzf('')
+        else
+            let l:history = readfile(expand(g:fzf_history_dir) .. "/rg", '', -1)
+            let l:last = l:history[0]
+            call s:flashcard_call_fzf(l:last)
+        endif
     else
         echom s:flashcards_echom_prefix .. 'Wrong current mode argument.'
     endif
