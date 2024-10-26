@@ -95,7 +95,7 @@ function! s:flashcard_cb(lines, current_mode)
     " Else, it is just [key]
     if len(a:lines) < 2
         let l:key = a:lines[0]
-        let l:file = 0
+        let l:file = "NONE"
     else
         let [l:key, l:fileline_str] = a:lines
         let l:file = split(l:fileline_str, ':', 2)[0]
@@ -114,7 +114,7 @@ function! s:flashcard_cb(lines, current_mode)
     endif
 
     " Actions that require match. Ensure sane input before that
-    if l:file == 0
+    if l:file == "NONE" " Beware! In some versions of vim 'any_str'==0 yields true
         echom s:flashcards_echom_prefix .. 'Empty line selected. No FZF match.'
         return
     endif
