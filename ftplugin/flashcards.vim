@@ -1,24 +1,22 @@
 
-function! b:FlashcardsLoadTemplate ()
-    read
-endfunction
+function! FlashcardsAlign()
+    
+    " Measure length of largest sentence before '  : '
+    let l:maxlen = 0
+    for line in getline(1, '$')
+        if line =~ ' : '
+            let pre_colon_text = matchstr(line, '^\(.*\S\)\ze\s\+:')
+            let maxlen = max([maxlen, strlen(pre_colon_text)])
+        endif
+    endfor
 
-function! b:FlashcardsFormatting ()
-    " Ideas
-    " Set the title indentation to zero
-    " Set the description to the right of the title
-    
-    " Ensure the separator '===' is there and adjust its lenght
-    
-    " Maybe do this if we're on an unsaved buffer
-    " Detect the template empty fields for FLASHCARD XX and XX-XX-XXXX, overwrite if so
-    
-    " Warn the user:
-    "   - too wide a note
-    
-    " Auto align by :
+    " Custom offset
+    let l:maxlen += 1
+
+    " Format lines by aligning colons
+    execute '%s/\v(.*\S)+\s*:\s*/\=printf("%-' .. l:maxlen .. 's : ", submatch(1))/'
 
 endfunction
 
-" " Apply formatting on save
-" autocmd BufWritePre <buffer> call b:flashcard_beautify()
+" Apply formatting on save
+autocmd BufWritePre <buffer> call FlashcardsAlign()
