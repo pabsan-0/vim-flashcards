@@ -110,6 +110,7 @@ function! s:flashcard_cb(lines, current_mode)
         let l:newcard = l:newcard .. g:flashcards_file_extension
         execute 'tabnew ' .. fnameescape(g:flashcards_directory .. l:newcard)
         execute 'read ' .. fnameescape(g:flashcards_template)
+        " TODO apply empty-field formatting here?
         return
     endif
 
