@@ -1,15 +1,30 @@
+" Symlink-proof way to resolve the plugin's path
+let g:flashcards_plugin_path = fnamemodify(resolve(expand('<sfile>:p')), ':h')
+
+" User should tune these options
+let g:flashcards_template = g:flashcards_plugin_path .. "/../samples/template.fc"
 let g:flashcards_directory = "/opt/pabsan-0/flashcards/cards/"
-let g:flashcards_template = "/opt/pabsan-0/flashcards/assets/template.fc"
-let s:flashcards_echom_prefix = '[flashcards.vim] '
 let g:flashcards_file_extension = '.fc'
 
+" These need mindful tuning, keys need to be changed somewhere else too
 let s:flashcards_fzf_keys = 'tab,ctrl-a,ctrl-t,ctrl-l,ctrl-w'
-let s:flashcards_fzf_hint = 'switch mode <tab>, new card <C-n>, open on tab <C-t>/<C-l>, open on window <C-w>'
+let s:flashcards_fzf_hint = 'switch mode <tab>, add new <C-a>, open on tab <C-t>/<C-l>, open on window <C-w>'
+let s:flashcards_echom_prefix = '[flashcards.vim] '
 
-" Check that fzf.vim is installed
+
+" Pre-checks: fzf installed && user-configured paths exist
 if match(&runtimepath, 'fzf.vim') == -1
     echom s:flashcards_echom_prefix . "fzf.vim not found! Loading anyway, do expect issues." 
 endif
+
+if !isdirectory(g:flashcards_directory)
+    echom s:flashcards_echom_prefix . "Could not find flashcards directory set in g:flashcards_directory: " . g:flashcards_directory
+endif
+
+if !filereadable(g:flashcards_template)
+    echom s:flashcards_echom_prefix . "Could not find template to load as per  g:flashcards_template: " . g:flashcards_template
+endif
+
 
 " Main calls to FZF and Rg
 " Within functions to enable tab-switching without code duplication
