@@ -1,0 +1,46 @@
+%YAML 1.2
+---
+name: Flashcard
+file_extensions:
+  - fc
+scope: text.flashcard
+
+contexts:
+   main:  # Applies to the first line only 
+    - match: '$'  
+      set: nonfirst.line
+
+    # First line
+    # - Text left of whitespace is Topic.
+    # - Text right of whitespace is Description.
+    - match: '^(.*)(\s){2,}(.*)$'
+      scope: first.line
+      captures:
+        1: markup.italic
+        3: meta.annotation
+
+   nonfirst.line:
+
+    # Separator line ====
+    - match: '^=+$'
+      scope: markup.italic
+
+    # Expected first line after separator 
+    # - Text left of whitespace is FLASHCARD NUMBER.
+    # - Text right of whitespace is user edited date.
+    - match: '^(.*)(\s){3,}([^:]*)$'
+      captures:
+        1: markup.heading
+        3: markup.italic
+
+    # Match any line without a ':'
+    - match: '^[^:]+$'
+      scope: markup.italic
+
+    # Match lines with : and separate keystrokes from description
+    - match: '^(.*)(\s)*:(\s)*(.*)$'
+      scope: list
+      captures:
+        1: markup.quote
+        4: markup.text
+

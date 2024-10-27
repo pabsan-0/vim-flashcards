@@ -2,7 +2,7 @@
 let g:flashcards_plugin_path = fnamemodify(resolve(expand('<sfile>:p')), ':h')
 
 " User should tune these options
-let g:flashcards_template = g:flashcards_plugin_path .. "/../samples/template.fc"
+let g:flashcards_template = g:flashcards_plugin_path .. "/../assets/template.fc"
 let g:flashcards_directory = "/opt/pabsan-0/flashcards/cards/"
 let g:flashcards_file_extension = '.fc'
 

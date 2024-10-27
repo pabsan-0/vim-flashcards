@@ -1,4 +1,4 @@
-setlocal textwidth=50
+setlocal textwidth=65
 
 function! FlashcardsAlignSeparator()
     execute 'g/^=\+$/s/.*/\=repeat("=", ' .. &textwidth  .. ')/'
