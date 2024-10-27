@@ -1,7 +1,7 @@
 syntax match FlashcardFirstLineTitle   "\%1l^.\{-}\ze\(\s\s\s\|\n\)"     " Match least amount of text followed by at least 3 spaces in first line
 syntax match FlashcardFirstLineDesc    "\%1l\s\s\s\zs.*"                 " Match any text preceded by 3 spaces in first line
 syntax match FlashcardSeparator        "^=\+$"                           " Match a line with only = characters
-syntax match FlashcardCollectionNumber "^[A-Z]\+\s*\d\+"                 " Match uppercase letters followed by a number
+syntax match FlashcardCollectionNumber "^[A-Z ]\+\d\+"                 " Match uppercase letters followed by a number
 syntax match FlashcardDate             "\d\+-[a-zA-Z0-9-]\+-\d\{2,4}"    " Match date at EOL after CollectionNumber
 syntax match FlashcardTitle            "^[A-Z][a-zA-Z ]*$"               " Match any Word or Sentence plus newline
 syntax match FlashcardInfolineLeft     ".*\ze\s\s\+:\s\+.*$"               " Match any : and take left side 
