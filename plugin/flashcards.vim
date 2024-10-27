@@ -28,7 +28,7 @@ endif
 
 " Main calls to FZF and Rg
 " Within functions to enable tab-switching without code duplication
-function! s:flashcard_call_rg(query)
+function! s:flashcards_call_rg(query)
     call fzf#vim#grep(
         \ "rg --column --color=always --smart-case " .. shellescape(a:query), 
         \ 1, 
@@ -38,53 +38,53 @@ function! s:flashcard_call_rg(query)
         \      '--header=' .. s:flashcards_fzf_hint,
         \      '--query', a:query
         \   ], 
-        \  'sink*': function('s:flashcard_cb_rg')
+        \  'sink*': function('s:flashcards_cb_rg')
         \ }), 0)
 endfunction
 
-function! s:flashcard_call_fzf(query)
+function! s:flashcards_call_fzf(query)
     call fzf#vim#files(g:flashcards_directory, fzf#vim#with_preview({
         \   'options': [
         \      '--expect=' .. s:flashcards_fzf_keys,
         \      '--header=' .. s:flashcards_fzf_hint,
         \      '--query', a:query
         \   ], 
-        \   'sink*': function('s:flashcard_cb_fzf')
+        \   'sink*': function('s:flashcards_cb_fzf')
         \ }), 0)
 endfunction
 
 
 " User interfaces to the functions above
 command! -bang -nargs=* FlashcardsFzf
-    \ call s:flashcard_call_fzf(<q-args>)
+    \ call s:flashcards_call_fzf(<q-args>)
 
 command! -bang -nargs=* FlashcardsRg
-    \ call s:flashcard_call_rg(<q-args>)
+    \ call s:flashcards_call_rg(<q-args>)
 
 
 " This function switches FZF<->RG while keeping the current buffered text
 " - Can only keep text if g:fzf_history_dir is configured, else discards it
 " - Not perfect: won't usually crash everything but shows weird behavior
-function! s:flashcard_mode_switch(current_mode)
+function! s:flashcards_mode_switch(current_mode)
 
     if a:current_mode == 'fzf'
 
         if get(g:, 'fzf_history_dir', 0) == 0
-            call s:flashcard_call_rg('')
+            call s:flashcards_call_rg('')
         else
             let l:history = readfile(expand(g:fzf_history_dir) .. "/files", '', -1)
             let l:last = l:history[0]
-            call s:flashcard_call_rg(l:last)
+            call s:flashcards_call_rg(l:last)
         endif
 
     elseif a:current_mode == 'rg'
         
         if get(g:, 'fzf_history_dir', 0) == 0
-            call s:flashcard_call_fzf('')
+            call s:flashcards_call_fzf('')
         else
             let l:history = readfile(expand(g:fzf_history_dir) .. "/rg", '', -1)
             let l:last = l:history[0]
-            call s:flashcard_call_fzf(l:last)
+            call s:flashcards_call_fzf(l:last)
         endif
     else
         echom s:flashcards_echom_prefix .. 'Wrong current mode argument.'
@@ -96,15 +96,15 @@ endfunction
 " Three fzf.vim callbacks: 2 specific + 1 common one
 " This is to know current mode towards switching FZF<->RG
 " After this check is made, the whole logic off the fzf menu begins
-function! s:flashcard_cb_rg(lines)
-    call s:flashcard_cb(a:lines, "rg")
+function! s:flashcards_cb_rg(lines)
+    call s:flashcards_cb(a:lines, "rg")
 endfunction
 
-function! s:flashcard_cb_fzf(lines)
-    call s:flashcard_cb(a:lines, "fzf")
+function! s:flashcards_cb_fzf(lines)
+    call s:flashcards_cb(a:lines, "fzf")
 endfunction
 
-function! s:flashcard_cb(lines, current_mode)
+function! s:flashcards_cb(lines, current_mode)
     
     " If there is a match, lines will have [key, match]
     " Else, it is just [key]
@@ -118,7 +118,7 @@ function! s:flashcard_cb(lines, current_mode)
 
     " Actions that require no match
 	if l:key == 'tab'         " Perform mode switching based on the key
-        call s:flashcard_mode_switch(a:current_mode)
+        call s:flashcards_mode_switch(a:current_mode)
         return
     elseif l:key == 'ctrl-a'    " Edit and Add a new flashcard
         let l:newcard = input('Insert new filename (no extension): ')
@@ -149,9 +149,10 @@ function! s:flashcard_cb(lines, current_mode)
 
         if l:window_split_char ==# 's'
             execute 'split ' .. file
-        elseif if l:window_split_char ==# 'v'
+        elseif l:window_split_char ==# 'v'
             execute 'vsplit ' .. file
         else
+            " default but explicit keys in source code
             execute 'vsplit ' .. file
         endif
         return 
