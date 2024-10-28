@@ -8,7 +8,7 @@ let g:flashcards_file_extension = '.fc'
 
 " These need mindful tuning, keys need to be changed somewhere else too
 let s:flashcards_fzf_keys = 'tab,ctrl-a,ctrl-t,ctrl-l,ctrl-w'
-let s:flashcards_fzf_hint = 'switch mode <tab>, add new <C-a>, open on tab <C-t>/<C-l>, open on window <C-w>'
+let s:flashcards_fzf_hint = 'fzf/rg <tab>, add new <C-a>, on tab <C-t>/<C-l>, on window <C-w>'
 let s:flashcards_echom_prefix = '[flashcards.vim] '
 
 
@@ -69,7 +69,7 @@ function! s:flashcards_mode_switch(current_mode)
 
     if a:current_mode == 'fzf'
 
-        if get(g:, 'fzf_history_dir', 0) == 0
+        if get(g:, 'fzf_history_dir', 'NONE') == 'NONE'
             call s:flashcards_call_rg('')
         else
             let l:history = readfile(expand(g:fzf_history_dir) .. "/files", '', -1)
@@ -79,7 +79,7 @@ function! s:flashcards_mode_switch(current_mode)
 
     elseif a:current_mode == 'rg'
         
-        if get(g:, 'fzf_history_dir', 0) == 0
+        if get(g:, 'fzf_history_dir', 'NONE') == 'NONE'
             call s:flashcards_call_fzf('')
         else
             let l:history = readfile(expand(g:fzf_history_dir) .. "/rg", '', -1)
@@ -110,7 +110,7 @@ function! s:flashcards_cb(lines, current_mode)
     " Else, it is just [key]
     if len(a:lines) < 2
         let l:key = a:lines[0]
-        let l:file = "NONE"
+        let l:file = 'NONE'
     else
         let [l:key, l:fileline_str] = a:lines
         let l:file = split(l:fileline_str, ':', 2)[0]
@@ -129,7 +129,7 @@ function! s:flashcards_cb(lines, current_mode)
     endif
 
     " Actions that require match. Ensure sane input before that
-    if l:file == "NONE" " Beware! In some versions of vim 'any_str'==0 yields true
+    if l:file == 'NONE' " Beware! In some versions of vim 'any_str'==0 yields true
         echom s:flashcards_echom_prefix .. 'Empty line selected. No FZF match.'
         return
     endif
