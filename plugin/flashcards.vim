@@ -7,8 +7,8 @@ let g:flashcards_directory = "/opt/pabsan-0/flashcards/cards/"
 let g:flashcards_file_extension = '.fc'
 
 " These need mindful tuning, keys need to be changed somewhere else too
-let s:flashcards_fzf_keys = 'tab,ctrl-a,ctrl-t,ctrl-l,ctrl-w'
-let s:flashcards_fzf_hint = 'fzf/rg <tab>, add new <C-a>, on tab <C-t>/<C-l>, on window <C-w>'
+let s:flashcards_fzf_keys = 'tab,ctrl-a,ctrl-t,ctrl-l,ctrl-s'
+let s:flashcards_fzf_hint = 'fzf/rg <tab>, add new <C-a>, on tab <C-t>/<C-l>, on winsplit <C-s>'
 let s:flashcards_echom_prefix = '[flashcards.vim] '
 
 
@@ -143,14 +143,17 @@ function! s:flashcards_cb(lines, current_mode)
 		execute 'tabp'
         return
 
-    elseif l:key == 'ctrl-w'    " Open flashcard in new Window
-        echo "Specify window split direction: s/v"
+    elseif l:key == 'ctrl-s'    " Open flashcard in new Window
+        echo "Specify window split direction: s/v or [c]ancel"
         let l:window_split_char = getchar()
 
         if l:window_split_char ==# 's'
             execute 'split ' .. file
         elseif l:window_split_char ==# 'v'
             execute 'vsplit ' .. file
+        elseif l:window_split_char ==# 'c'  
+        elseif l:window_split_char == 27  "escape
+            " do nothing
         else
             " default but explicit keys in source code
             execute 'vsplit ' .. file
