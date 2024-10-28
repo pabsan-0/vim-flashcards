@@ -37,10 +37,10 @@ If unused, the plugin will set `<leader>c` as default mapping to call the flashc
 
 At the search window:
 - `tab`: alternate ripgrep and fzf (content / card name) search.
-- `C-a`: *a*dd a new card.
-- `C-t`: open card in a new *t*ab.
-- `C-l`: open card in a new tab for *l*ater.
-- `C-w`: open card in a new window. Prompts for v/s afterwards.
+- `C-a`: **a**dd a new card.
+- `C-t`: open card in a new **t**ab.
+- `C-l`: open card in a new tab for **l**ater.
+- `C-s`: open card in a new window **s**plit. Prompts for v/s afterwards.
 
 
 ## Features
@@ -59,7 +59,10 @@ Find my collection at [pabsan-0/flashcards](https://github.com/pabsan-0/flashcar
 If you've configured `fzf` to store a search history, you can keep your query when alternating modes with `tab`. In order to do that, add the following lines to `.vimrc`.
 
 ```
-" TODO
+let g:fzf_history_dir = '~/.local/share/fzf-history'
+
+" Optional: Remap bindings to keep <c-p> and <c-n> as usual for up-down navigation
+let $FZF_DEFAULT_OPTS = '--bind ctrl-n:down,ctrl-p:up,alt-n:next-history,alt-p:prev-history'
 ```
 
 ### Colored preview in fzf search
